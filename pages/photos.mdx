@@ -10,22 +10,23 @@ Here's some of my photography.
 
 import Image from 'next/image'
 
-<Image
-  src="/images/photo2.jpg"
-  alt="Photo"
-  width={1125}
-  height={750}
-  priority
-  className="next-image"
-/>
-[Unsplash ↗ ](https://unsplash.com/photos/WeYamle9fDM)
+      {props.photos.map(photo => (
+        <Image
+          key={photo.id}
+          src={photo.url_l}
+          width={photo.width_l}
+          height={photo.height_l}
+          alt={photo.title}
+          priority
+          className="next-image"
+        />
+      ))}
 
-<Image
-  src="/images/photo.jpg"
-  alt="Photo"
-  width={1125}
-  height={750}
-  priority
-  className="next-image"
-/>
-[Unsplash ↗ ](https://unsplash.com/photos/ndN00KmbJ1c)
+export async function getStaticProps() {
+  const response = await fetch(`https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=${process.env.FLICKR_API_KEY}&user_id=${process.env.FLICKR_USER_ID}&extras=url_l&format=json&nojsoncallback=1`)
+  const data = await response.json()
+  return {
+    props: { photos: data.photos.photo },
+    revalidate: 3600
+  }
+}
