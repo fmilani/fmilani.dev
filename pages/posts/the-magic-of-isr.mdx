@@ -1,0 +1,96 @@
+---
+title: The magic of ISR
+date: 2021/11/15
+description: Making what is static more dynamic
+tag: web development, programming
+author: Felipe
+---
+
+# The magic of ISR
+
+## IS-What?
+
+ISR stands for *incremental static regeneration*. It's a technique that I first
+heard a while ago when reading about the framework [Next.js][0] and that I'll
+talk more about in this post. But first some context.
+
+## SSG, SSR, CSR
+
+More acronyms? Unfortunatelly, yes. I'm not a fan of acronyms but these ones
+appear to be wildely used these days on the frontend tech circles. But don't
+worry, we'll go through each one of them.
+
+### CSR: Client Side Rendering
+
+Starting with the last, CSR, or client side rendering, means that the browser
+(the client) is responsible for rendering the content of a website. It is
+normally what you would expect from a React app by default when using
+create-react-app: when you access a webpage, the server sends javascript to the
+browser, then the browser parses that javascript, execute it and the get the
+html to display to you. One of the biggest drawbacks of this approach is that
+you have to wait a longer time to get to see some content on the page, when
+compared to the other approaches.
+
+### SSR: Server Side Rendering
+
+This approach is older than client side rendering. It's what was done when using
+php, for instance. When you hit a webpage, the server is responsible for
+generating the html specific to your request and send it to the browser, so when
+it receives the response the html is ready to be displayed. Next.js is a
+framework that brings this approach to React.
+Interestingly enough, CSR was born to make for a faster experience for the user.
+I said earlier that CSR takes a longer time to show the first meaningful content
+to the user. But if it is expected that the user makes lots of page transitions,
+SSR can feel slower than CSR, because for each navigation between pages, a new
+request has to be made to the server to fetch the html for said page, so SSR
+also has its drawbacks.
+
+### SSG: Static Site Generation
+
+When you have a website where the content of its pages don't need to change
+between requests, like this blog post(!), you could generate its html (and js
+and styles, which I forgot to mention on the other approaches) once and store them somewhere else, like a CDN, which could be closer to where the user visiting
+the website is, without the need to request the server. The massive advantage of
+this approach is that it is blazing fast 🔥. The biggest drawback is that, as
+the names says, it is not dynamic. If I had to make a change on this blog post,
+I would need to build it again (generate its html, js, css) and update the CDNs
+with the new version. Luckily, Next.js also supports this technique and does all
+that work for us.
+
+With all these approaches introduced, we can finally talk about the magic!
+
+## The magic
+
+As I mentioned before, this blog is a perfect fit for static site generation
+(just like many blogs 😬). I don't plan to change the contents of the pages very
+often and I want everybody who access the posts to see the same content. But
+yesterday I wanted to do something different. I wanted my photos page to show
+my photos uploaded to flickr. And I didn't want to rebuild the blog every time
+I uploaded a new photo to flickr. So I saw the perfect opportunity to use the
+magic of incremental static regeneration. Without going into too much
+[details][1] (because I don't know much about it), you simply add a `revalidate`
+attribute on the return of a page's `getStaticProps` to turn on ISR.
+
+On my photos page, inside `getStaticProps`, I made a call to flickr api to get
+my photos and embed them on the page. Adding the `revalidate: 3600` to the
+return of the method makes Next.js trigger a regeneration of the previously
+built page on the background when 3600 seconds have passed since the first
+request to the page, which will fetch any new photo I took without me having to
+rebuild my blog!
+
+
+## Conclusion
+
+With ISR, activated with a [single line of code][2], I can have a piece of
+dynamic content inside my static website, having the benefits of both worlds.
+Arthur C. Clarke once said that [any sufficiently advanced technology is
+indistinguishable from magic][3]. I like to think that we can learn a new piece
+of technology and even fully understand it so it doesn't feel that much
+advanced anymore (which I hope to do with ISR, some day), but still keep that
+feeling of seeing something magical 🪄.
+
+
+[0]: https://nextjs.org
+[1]: https://nextjs.org/docs/basic-features/data-fetching#incremental-static-regeneration
+[2]: https://github.com/fmilani/fmilani.dev/commit/85b48616bd388aae737c072fde675259dfe5b96f#diff-bcc13c39ea9a767fe3e539b3d7d830c4c4fd346b44092fa93037e269c9fc4eabR30
+[3]: https://www.goodreads.com/quotes/14885-any-sufficiently-advanced-technology-is-indistinguishable-from-magic
