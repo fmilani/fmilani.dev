@@ -6,9 +6,8 @@ tag: web development, programming
 author: Felipe
 ---
 
-# Cache Invalidation is Hard
-
 ## My first blog post ever
+
 Ever since I came across [Blitz.js][0], I've been thinking about rewriting
 [Contatempo][1] using it. I've also been thinking about creating a blog for a
 long time (I guess it was my 2018's new year resolution). Now that I'm learning
@@ -17,6 +16,7 @@ thoughts on a blog. So, hopefully, this will be the first of many posts to
 come.
 
 ## Context
+
 For this very first post, I'll write about my adventures on facing one the
 [two hard things][2] in computer science: cache invalidation. Or so I thought
 that was my problem (spoiler alert: it wasn't, at least not the root cause).
@@ -36,6 +36,7 @@ parts. (And now I realize that maybe `getTotalTime` was not the best name, as
 it not actually the **total** total time)
 
 ## The problem
+
 For now the creation (or the start) and the finishing (or the end) are set by a
 single Start/Stop button. When it is first click (displaying the "Start" label)
 a new record is created and when it is clicked again (now displaying the "Stop"
@@ -52,6 +53,7 @@ showing a higher value than expected, and sometimes it would not include the
 time of the just ended record, showing a lower value than expected. But why?
 
 ## Why it occurred
+
 After another several hours, on the next day, I finally realized what was
 happening: when the elapsed time showed a higher value, it was because the
 cache for the `getTotalTime` query was invalidated first, then triggering a
@@ -66,6 +68,7 @@ from the ongoing record) be zero, but the `getTotalTime` query would still not
 include this just finished record.
 
 ## The cause
+
 The problem then was that I needed a way to invalidate both caches at the same
 time so this brief inconsistent state could disappear. I went through a lot the
 documentation of both Blitz and react-query (which is what Blitz uses under the
@@ -76,6 +79,7 @@ in a single call. I replaced both `invalidateQuery` calls with the single
 problem was **still** happening! Why??
 
 ## The real cause
+
 A day later I had a new theory: it doesn't matter if I invalidate both queries
 at the same time! Maybe React was already doing it for me even when I was
 calling invalidateQuery for each query. The problem really was that, after both
@@ -87,6 +91,7 @@ query was paginated, and it may not always return the ongoing record, which
 would result in the total elapsed time being calculated wrong.
 
 ## The solution
+
 So, after some consideration I came to the conclusion that, instead of trying
 to change the behaviour of the framework and library at play, the best way to
 fix this problem was to rethink my queries, and make them return all the
